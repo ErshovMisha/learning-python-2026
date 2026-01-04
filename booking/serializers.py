@@ -10,21 +10,18 @@ class RoomSerializer(serializers.ModelSerializer):
 
 # Перекладач для бронювань
 class BookingSerializer(serializers.ModelSerializer):
+    # Явно кажемо: це поле сервер віддає, але не приймає від клієнта
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+
     class Meta:
         model = Booking
         fields = '__all__'
 
-    # Ця функція запускається автоматично, коли хтось надсилає дані
     def validate(self, data):
         check_in = data['check_in']
         check_out = data['check_out']
-
-        # Перевірка 1: Дата виїзду має бути пізніше дати заїзду
         if check_out <= check_in:
             raise serializers.ValidationError("Check-out date must be after check-in date.")
-
-        # Перевірка 2: Не можна бронювати в минулому
         if check_in < date.today():
             raise serializers.ValidationError("You cannot book a room in the past!")
-
         return data
